@@ -50,12 +50,28 @@ class ValidationArrayRuleTest extends TestCase
         $this->assertSame('array:1,2,3', (string) $rule);
     }
 
-    public function testItCorrectlyFormatsArraySizeConstraints()
+    public function testBetweenRule()
+    {
+        $this->assertSame('array|between:2,5', (string) Rule::array()->between(2, 5));
+    }
+
+    public function testExactlyRule()
+    {
+        $this->assertSame('array|size:3', (string) Rule::array()->exactly(3));
+    }
+
+    public function testMaxRule()
+    {
+        $this->assertSame('array|max:5', (string) Rule::array()->max(5));
+    }
+
+    public function testMinRule()
     {
         $this->assertSame('array|min:2', (string) Rule::array()->min(2));
-        $this->assertSame('array|max:5', (string) Rule::array()->max(5));
-        $this->assertSame('array|between:2,5', (string) Rule::array()->between(2, 5));
-        $this->assertSame('array|size:3', (string) Rule::array()->exactly(3));
+    }
+
+    public function testChainedRules()
+    {
         $this->assertSame('array:key_1,key_2|min:2|max:5', (string) Rule::array(['key_1', 'key_2'])->min(2)->max(5));
     }
 
@@ -98,5 +114,13 @@ class ValidationArrayRuleTest extends TestCase
         $this->assertTrue((new Validator($trans, ['foo' => [1, 2]], ['foo' => Rule::array()->exactly(2)]))->passes());
         $this->assertTrue((new Validator($trans, ['foo' => [1]], ['foo' => Rule::array()->min(2)]))->fails());
         $this->assertTrue((new Validator($trans, ['foo' => [1, 2, 3]], ['foo' => Rule::array()->max(2)]))->fails());
+    }
+
+    public function testConditionalArrayRules()
+    {
+        $trans = new Translator(new ArrayLoader, 'en');
+
+        $this->assertTrue((new Validator($trans, ['foo' => [1]], ['foo' => Rule::array()->when(true, fn ($rule) => $rule->min(2))]))->fails());
+        $this->assertTrue((new Validator($trans, ['foo' => [1]], ['foo' => Rule::array()->when(false, fn ($rule) => $rule->min(2))]))->passes());
     }
 }

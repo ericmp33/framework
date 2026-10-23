@@ -4,12 +4,15 @@ namespace Illuminate\Validation\Rules;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Traits\Conditionable;
 use Stringable;
 
 use function Illuminate\Support\enum_value;
 
 class ArrayRule implements Stringable
 {
+    use Conditionable;
+
     /**
      * The accepted keys.
      *
@@ -38,6 +41,10 @@ class ArrayRule implements Stringable
 
     /**
      * The array under validation must contain between the given minimum and maximum number of items.
+     *
+     * @param  int  $min
+     * @param  int  $max
+     * @return $this
      */
     public function between(int $min, int $max): static
     {
@@ -46,6 +53,9 @@ class ArrayRule implements Stringable
 
     /**
      * The array under validation must contain the given number of items.
+     *
+     * @param  int  $value
+     * @return $this
      */
     public function exactly(int $value): static
     {
@@ -54,6 +64,9 @@ class ArrayRule implements Stringable
 
     /**
      * The array under validation must contain no more than the given number of items.
+     *
+     * @param  int  $value
+     * @return $this
      */
     public function max(int $value): static
     {
@@ -62,6 +75,9 @@ class ArrayRule implements Stringable
 
     /**
      * The array under validation must contain at least the given number of items.
+     *
+     * @param  int  $value
+     * @return $this
      */
     public function min(int $value): static
     {

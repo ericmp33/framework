@@ -3,6 +3,7 @@
 namespace Illuminate\Validation\Rules;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Stringable;
 
 use function Illuminate\Support\enum_value;
@@ -15,6 +16,11 @@ class ArrayRule implements Stringable
      * @var array
      */
     protected $keys;
+
+    /**
+     * The constraints for the array rule.
+     */
+    protected array $constraints = [];
 
     /**
      * Create a new array rule instance.
@@ -31,21 +37,65 @@ class ArrayRule implements Stringable
     }
 
     /**
+     * The array under validation must contain between the given minimum and maximum number of items.
+     */
+    public function between(int $min, int $max): static
+    {
+        return $this->addRule('between:'.$min.','.$max);
+    }
+
+    /**
+     * The array under validation must contain the given number of items.
+     */
+    public function exactly(int $value): static
+    {
+        return $this->addRule('size:'.$value);
+    }
+
+    /**
+     * The array under validation must contain no more than the given number of items.
+     */
+    public function max(int $value): static
+    {
+        return $this->addRule('max:'.$value);
+    }
+
+    /**
+     * The array under validation must contain at least the given number of items.
+     */
+    public function min(int $value): static
+    {
+        return $this->addRule('min:'.$value);
+    }
+
+    /**
      * Convert the rule to a validation string.
      *
      * @return string
      */
     public function __toString()
     {
-        if (empty($this->keys)) {
-            return 'array';
+        $rule = 'array';
+
+        if (! empty($this->keys)) {
+            $keys = array_map(
+                static fn ($key) => enum_value($key),
+                $this->keys,
+            );
+
+            $rule .= ':'.implode(',', $keys);
         }
 
-        $keys = array_map(
-            static fn ($key) => enum_value($key),
-            $this->keys,
-        );
+        return implode('|', [$rule, ...$this->constraints]);
+    }
 
-        return 'array:'.implode(',', $keys);
+    /**
+     * Add custom rules to the validation rules array.
+     */
+    protected function addRule(array|string $rules): static
+    {
+        $this->constraints = array_merge($this->constraints, Arr::wrap($rules));
+
+        return $this;
     }
 }
